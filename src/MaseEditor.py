@@ -3,11 +3,16 @@ from tkinter import filedialog
 import os, sys, select, subprocess
 import serial.tools.list_ports
 
+ #0080ff 
+
+bg_color = "#777777" 
+fg_color = "#00ff70"
+
 app = Tk()
 app.resizable(True, True)
 app.title("Mase Editor")
 frameMain = Frame(app)
-textArea = Text(app, width="125", height="40", bg="black", fg="lightgreen", insertbackground="white")
+textArea = Text(app, width="125", height="40", bg=bg_color, fg=fg_color, insertbackground="white")
 
 def getPorts():
     ports = serial.tools.list_ports.comports()
@@ -81,7 +86,10 @@ def compile():
         pass
 
     try:
-        os.system("nasm -f bin {} -o {}.bin".format(str(file_path), str(file_path)))
+        if file_path.endswith(".asm") or file_path.endswith(".s"):
+            os.system("nasm -f bin {} -o {}.bin".format(str(file_path), str(file_path)))
+        elif file_path.endswith(".c"):
+            os.system("gcc {} -o {}".format(str(file_path), str(file_path).split(".c")))
     except Exception as ex:
         print("You need to install nasm. {}".format(ex))
         pass
