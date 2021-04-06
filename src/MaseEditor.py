@@ -1,12 +1,45 @@
 from tkinter import *
 from tkinter import filedialog
-import os
+import os, sys, select, subprocess
+import serial.tools.list_ports
 
 app = Tk()
 app.resizable(True, True)
 app.title("Mase Editor")
 frameMain = Frame(app)
-textArea = Text(app, width="125", height="40", bg="black", fg="yellow", insertbackground="yellow")
+textArea = Text(app, width="125", height="40", bg="black", fg="lightgreen", insertbackground="white")
+
+def getPorts():
+    ports = serial.tools.list_ports.comports()
+    return ports
+
+def findPico(port_list):
+    com_port = None
+    connections = len(port_list)
+
+    for _ in range(0, connections):
+        port = port_list[_]
+        strPort = str(port)
+
+        if "Board" in strPort:
+            split_port = strPort.split(" ")
+            com_port = (split_port[0])
+
+    return com_port
+
+def connectPico():
+    ports_found = getPorts()
+    target_port = findPico(ports_found)
+
+    if target_port != None:
+        ser = serial.Serial(target_port, baudrate=115200, timeout=1)
+        connected = StringVar()
+        status = Label(app, textvariable=connected, relief=RAISED)
+        connected.set("Connected to {}".format(str(ser.name)))
+        status.pack(side=TOP)
+
+    else:
+        print("Connection Failed.")
 
 def saveFile():
     filename = filedialog.asksaveasfilename(initialdir = "/",
@@ -41,6 +74,8 @@ def initApp():
     savef.pack(side=LEFT)
     openf = Button(menuBar, text="Open", command=openFile)
     openf.pack(side=LEFT)
+    serial = Button(menuBar, text="Connect", command=connectPico)
+    serial.pack(side=RIGHT)
     exect = Button(menuBar, text="Run", command=execute)
     exect.pack(side=RIGHT)
     frameMain.pack()
