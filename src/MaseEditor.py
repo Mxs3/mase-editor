@@ -42,21 +42,25 @@ def connectPico():
         print("Connection Failed.")
 
 def saveFile():
-    filename = filedialog.asksaveasfilename(initialdir = "/",
-    title = "Select file",filetypes = (("Python Files","*.py"),("All Files","*.*")))
+    file_path = filedialog.asksaveasfilename(initialdir = "/",
+    title = "Save file as",filetypes = (("Python Files","*.py"),("All Files","*.*")))
     try:
-        with open(filename, "w") as file:
+        with open(file_path, "w") as file:
             contents = textArea.get("1.0", END)
             file.write(contents)
     except Exception:
         pass
 
 def openFile():
-    filename = filedialog.askopenfilename(initialdir = "/",
+    file_path = filedialog.askopenfilename(initialdir = "/",
     title = "Select file",filetypes = (("Python Files","*.py"),("All Files","*.*")))
     textArea.delete("1.0", END)
+    filename = StringVar()
+    file_label = Label(app, textvariable=filename, relief=RAISED)
+    filename.set(str(os.path.basename(file_path)))
+    file_label.pack(side=TOP)
     try:
-        with open(filename, "r") as file:
+        with open(file_path, "r") as file:
             contents = file.read()
             textArea.insert(INSERT, contents)
     except Exception:
@@ -65,6 +69,22 @@ def openFile():
 def execute():
     contents = textArea.get("1.0", END)
     exec(contents)
+
+def compile():
+    file_path = filedialog.asksaveasfilename(initialdir = "/",
+    title = "Select file",filetypes = (("ASM Files","*.asm"),("All Files","*.*")))
+    try:
+        with open(file_path, "w") as file:
+            contents = textArea.get("1.0", END)
+            file.write(contents)
+    except Exception:
+        pass
+
+    try:
+        os.system("nasm -f bin {} -o {}.bin".format(str(file_path), str(file_path)))
+    except Exception as ex:
+        print("You need to install nasm. {}".format(ex))
+        pass
 
 def initApp():
     menuBar = Frame(app)
@@ -78,6 +98,8 @@ def initApp():
     serial.pack(side=RIGHT)
     exect = Button(menuBar, text="Run", command=execute)
     exect.pack(side=RIGHT)
+    compl = Button(menuBar, text="Compile", command=compile)
+    compl.pack(side=RIGHT)
     frameMain.pack()
     textArea.pack(expand=True, fill="both")
 
